@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, jsonify
 from crud import inserir, pedir
+from crud_usuario import cadastrar, login
 
 app = Flask(__name__)
 
@@ -24,3 +25,35 @@ def rota_pedir():
     resultado = pedir()
     return jsonify(resultado.data)
     
+@app.route('/login', methods=['POST'])
+def rota_login():
+    data = request.json
+    username = data.get("username")
+    senha = data.get("senha")
+
+    if not username or not senha:
+        return jsonify({"erro": "username e senha são obrigatórios"}), 400
+
+    resultado = login(username, senha)
+
+    if resultado.data:
+        return jsonify({"mensagem": "Login efetuado com sucesso!"})
+    else:
+        return jsonify({"erro": "Usuário ou senha incorretos!"})
+    
+@app.route('/cadastrar', methods=['POST'])
+def rota_cadastrar():
+    data = request.json
+    username = data.get("username")
+    senha = data.get("senha")
+
+    if not username or not senha:
+        return jsonify({"erro": "username e senha são obrigatórios"}), 400
+
+    resultado = cadastrar(username, senha)
+
+    if resultado.status_code == 201:
+        return jsonify({"mensagem": "Usuário cadastrado com sucesso!"}), 201
+    else:
+        return jsonify({"erro": "Erro ao cadastrar usuário"}), 400
+

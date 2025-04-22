@@ -19,7 +19,7 @@ def inserir(username, message):
     return data
 
 def pedir():
-    select = supabase.table("chat1").select("*").execute()
+    select = supabase.table("chat1").select("*, usuarios(usuario)").execute()
     return select
 
 def deletar_tudo():
