@@ -23,7 +23,4 @@ def rota_inserir():
 def rota_pedir():
     resultado = pedir()
     return jsonify(resultado.data)
-
-if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=5000, debug=True)
     
