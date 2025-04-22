@@ -1,4 +1,4 @@
-let username = ""; // Variável global para o usuário logado
+let usuarioLogado = null;
 
 document.getElementById("input").addEventListener("keydown", function (event) {
   if (event.key === "Enter") {
@@ -20,21 +20,65 @@ function escolherAcao() {
   }
 }
 
+async function fazerLogin() {
+  const username = prompt("Digite seu usuário:");
+  const senha = prompt("Digite sua senha:");
+
+  const res = await fetch("/login", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ username, senha }),
+  });
+
+  const data = await res.json();
+
+  if (data.mensagem) {
+    alert("✅ " + data.mensagem);
+    usuarioLogado = data.usuario;
+    document.getElementById(
+      "usuario-logado"
+    ).textContent = `Usuário: ${usuarioLogado.username}`;
+  } else {
+    alert("❌ " + data.erro);
+    fazerLogin();
+  }
+}
+
+async function fazerCadastro() {
+  const username = prompt("Escolha um nome de usuário:");
+  const senha = prompt("Escolha uma senha:");
+
+  const res = await fetch("/cadastrar", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ username, senha }),
+  });
+
+  const data = await res.json();
+
+  if (data.mensagem) {
+    alert("✅ " + data.mensagem);
+  } else {
+    alert("❌ " + data.erro);
+    fazerCadastro();
+  }
+}
+
 async function enviarMensagem() {
   const message = document.getElementById("input").value;
-  if (!message || !username) return;
+  if (!message || !usuarioLogado) return;
 
   const resposta = await fetch("/mensagem", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ username, message }),
+    body: JSON.stringify({ usuario_id: usuarioLogado.id, message }),
   });
 
   if (resposta.ok) {
     document.getElementById("input").value = "";
     buscarMensagens();
   } else {
-    console.error("Erro ao enviar mensagem:", resposta);
+    alert("Erro ao enviar mensagem");
   }
 }
 
@@ -45,80 +89,29 @@ async function buscarMensagens() {
   chat.innerHTML = "";
 
   dados.forEach((msg) => {
-    const mensagemCriada = document.createElement("div");
-    mensagemCriada.classList.add("mensagemCriada");
+    const div = document.createElement("div");
+    div.classList.add("mensagemCriada");
 
     const usuario = document.createElement("p");
-    usuario.classList.add("usuario");
-    usuario.textContent = `${msg.usuarios.username}`;
-    mensagemCriada.appendChild(usuario);
+    usuario.textContent = msg.usuarios.username;
 
     const horario = document.createElement("p");
-    horario.classList.add("horario");
     const data = new Date(msg.created_at);
-    const horarioFormatado = `${data.getHours()}:${data.getMinutes()}:${data.getSeconds()}`;
-    horario.textContent = `${horarioFormatado}`;
-    mensagemCriada.appendChild(horario);
+    horario.textContent = `${data.getHours()}:${data.getMinutes()}:${data.getSeconds()}`;
 
     const mensagem = document.createElement("p");
-    mensagem.classList.add("mensagem");
     mensagem.textContent = msg.message;
-    mensagemCriada.appendChild(mensagem);
 
-    chat.appendChild(mensagemCriada);
+    div.appendChild(usuario);
+    div.appendChild(horario);
+    div.appendChild(mensagem);
+
+    chat.appendChild(div);
   });
 
   chat.scrollTop = chat.scrollHeight;
 }
 
+escolherAcao();
 setInterval(buscarMensagens, 3000);
 buscarMensagens();
-
-function fazerLogin() {
-  const userInput = prompt("Digite seu usuário:");
-  const senha = prompt("Digite sua senha:");
-
-  fetch("/login", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ username: userInput, senha }),
-  })
-    .then((res) => res.json())
-    .then((data) => {
-      if (data.mensagem) {
-        username = userInput; // Define o usuário global
-        alert("✅ " + data.mensagem);
-        document.getElementById(
-          "usuario-logado"
-        ).textContent = `Usuário: ${username}`;
-      } else {
-        alert("❌ " + data.erro);
-        fazerLogin();
-      }
-    });
-}
-
-function fazerCadastro() {
-  const novoUser = prompt("Escolha um nome de usuário:");
-  const novaSenha = prompt("Escolha uma senha:");
-
-  fetch("/cadastrar", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ username: novoUser, senha: novaSenha }),
-  })
-    .then((res) => res.json())
-    .then((data) => {
-      if (data.mensagem) {
-        alert("✅ " + data.mensagem);
-        // Você pode perguntar se o usuário quer logar agora
-        const querLogar = confirm("Deseja fazer login agora?");
-        if (querLogar) {
-          fazerLogin();
-        }
-      } else {
-        alert("❌ " + data.erro);
-        fazerCadastro();
-      }
-    });
-}

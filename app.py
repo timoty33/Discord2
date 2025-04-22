@@ -11,20 +11,20 @@ def index():
 @app.route('/mensagem', methods=['POST'])
 def rota_inserir():
     data = request.json
-    username = data.get("username")
+    usuario_id = data.get("usuario_id")
     message = data.get("message")
 
-    if not username or not message:
-        return jsonify({"erro": "username e message são obrigatórios"}), 400
+    if not usuario_id or not message:
+        return jsonify({"erro": "usuario_id e message são obrigatórios"}), 400
 
-    resultado = inserir(username, message)  # Insere no banco de dados
+    resultado = inserir(usuario_id, message)
     return jsonify({"status": "Mensagem enviada com sucesso", "data": resultado.data}), 201
 
 @app.route('/mensagens', methods=['GET'])
 def rota_pedir():
     resultado = pedir()
     return jsonify(resultado.data)
-    
+
 @app.route('/login', methods=['POST'])
 def rota_login():
     data = request.json
@@ -37,10 +37,11 @@ def rota_login():
     resultado = login(username, senha)
 
     if resultado.data:
-        return jsonify({"mensagem": "Login efetuado com sucesso!"})
+        user = resultado.data[0]
+        return jsonify({"mensagem": "Login efetuado com sucesso!", "usuario": user})
     else:
-        return jsonify({"erro": "Usuário ou senha incorretos!"})
-    
+        return jsonify({"erro": "Usuário ou senha incorretos!"}), 401
+
 @app.route('/cadastrar', methods=['POST'])
 def rota_cadastrar():
     data = request.json
@@ -56,4 +57,3 @@ def rota_cadastrar():
         return jsonify({"mensagem": "Usuário cadastrado com sucesso!"}), 201
     else:
         return jsonify({"erro": "Erro ao cadastrar usuário"}), 400
-
