@@ -53,7 +53,9 @@ def rota_cadastrar():
 
     resultado = cadastrar(username, senha)
 
-    if resultado.status_code == 201:
+    # Verifique se há dados no resultado da inserção
+    if resultado.data:  # Verifica se foi possível inserir o usuário com sucesso
         return jsonify({"mensagem": "Usuário cadastrado com sucesso!"}), 201
     else:
         return jsonify({"erro": "Erro ao cadastrar usuário"}), 400
+    
