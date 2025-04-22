@@ -1,31 +1,24 @@
 from dotenv import load_dotenv
 import os
 from supabase import create_client
-import getpass
 
+# Carregar variáveis de ambiente do arquivo .env
 load_dotenv()
 
+# Obter URL e chave do Supabase do .env
 url = os.environ.get("SUPABASE_URL")
 key = os.environ.get("SUPABASE_KEY")
 supabase = create_client(url, key)
 
 def inserir(usuario_id, message):
+    # Inserindo a mensagem no banco de dados associando ao usuario_id
     data = supabase.table("chat1").insert({
-        "usuario_id": usuario_id,
+        "usuario_id": usuario_id,  # Associando a mensagem ao usuário
         "message": message
     }).execute()
     return data
 
 def pedir():
-    select = supabase.table("chat1").select("message, created_at, usuarios (username)").order("created_at", desc=False).execute()
+    # Recuperando todas as mensagens e associando com o usuário
+    select = supabase.table("chat1").select("*, usuarios(username)").execute()
     return select
-
-def deletar_tudo():
-    senha_digitada = getpass.getpass("Digite a senha para deletar: ")
-    if senha_digitada == "Timoteo2011@":
-        data = supabase.table("chat1").delete().neq("id", 0).execute()
-        print("Deletado com sucesso")
-        return data
-    else:
-        print("Senha incorreta!")
-        return

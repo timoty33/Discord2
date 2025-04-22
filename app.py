@@ -33,14 +33,15 @@ def rota_login():
 
     if not username or not senha:
         return jsonify({"erro": "username e senha são obrigatórios"}), 400
-
+    
     resultado = login(username, senha)
 
     if resultado.data:
-        user = resultado.data[0]
-        return jsonify({"mensagem": "Login efetuado com sucesso!", "usuario": user})
-    else:
-        return jsonify({"erro": "Usuário ou senha incorretos!"}), 401
+        # Aqui, vamos retornar o usuario_id para o frontend após o login bem-sucedido
+        usuario_id = resultado.data[0]["id"]  # Retorne o ID do usuário
+        return jsonify({"mensagem": "Login efetuado com sucesso!", "usuario_id": usuario_id})
+    else: 
+        return jsonify({"erro": "Usuário ou senha incorretos!"})
 
 @app.route('/cadastrar', methods=['POST'])
 def rota_cadastrar():
@@ -53,9 +54,7 @@ def rota_cadastrar():
 
     resultado = cadastrar(username, senha)
 
-    # Verifique se há dados no resultado da inserção
-    if resultado.data:  # Verifica se foi possível inserir o usuário com sucesso
+    if resultado.data:
         return jsonify({"mensagem": "Usuário cadastrado com sucesso!"}), 201
     else:
         return jsonify({"erro": "Erro ao cadastrar usuário"}), 400
-    
